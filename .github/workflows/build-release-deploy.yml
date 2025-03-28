@@ -171,21 +171,23 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          script_stop: true
           script: |
+            # 오류 발생 시 스크립트 실행 중지
+            set -e
+            
             echo "===== SSH 연결 성공! EC2 인스턴스 정보 ====="
             echo "호스트명: $(hostname)"
             echo "현재 사용자: $(whoami)"
             echo "운영체제 정보: $(cat /etc/os-release | grep PRETTY_NAME)"
             echo "현재 시간: $(date)"
             echo "============================================="
-
+            
             echo "도커 이미지 경로: ghcr.io/${{ env.OWNER_LC }}/dopdang:${{ needs.create_release.outputs.new_tag }}"
             echo "GitHub Container Registry에 로그인 시도..."
-
+            
             # 안전한 방식으로 도커 로그인
             echo "${{ secrets.GHCR_TOKEN }}" | sudo docker login ghcr.io -u ${{ secrets.GHCR_USERNAME }} --password-stdin
-
+            
             # 환경 변수 파일 생성 (모든 시크릿 포함)
             cat > .env << 'EOL'
             # 자동 생성된 환경 변수 파일
