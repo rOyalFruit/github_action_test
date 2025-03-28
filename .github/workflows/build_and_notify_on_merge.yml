@@ -6,6 +6,11 @@ on:
       - main
       - dev
 
+permissions:
+  security-events: write
+  actions: read
+  contents: read
+
 jobs:
   # 빌드 작업
   build:
@@ -96,10 +101,6 @@ jobs:
   # CodeQL 분석 작업 (빌드와 병렬로 실행)
   codeql-analysis:
     runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-      actions: read
-      contents: read
     outputs:
       codeql_status: ${{ steps.codeql.outcome }}
     steps:
