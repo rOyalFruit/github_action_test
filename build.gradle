@@ -41,6 +41,11 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
 tasks.withType(Checkstyle).configureEach {
     reports {
         xml.required = true // XML 보고서 생성
