@@ -28,44 +28,22 @@ jobs:
         run: chmod +x gradlew
 
       # 모든 시크릿을 환경변수로 변환하는 단계
-      - name: Export secrets to env file for Gradle
+      - name: Export secrets as environment variables
         run: |
-          # 시크릿을 환경변수 파일로 변환
-          echo "# GitHub Actions Secrets" > .env
-          
-          # GitHub 시크릿을 JSON으로 변환하고 파싱
-          SECRET_JSON=$(echo '${{ toJSON(secrets) }}' | jq -r 'to_entries | .[] | select(.key != "GITHUB_TOKEN" and .key != "EC2_SSH_KEY") | "\(.key)=\(.value)"')
-          
-          # 환경변수 파일에 추가
-          echo "$SECRET_JSON" >> .env
-          
-          # 환경변수 파일을 현재 셸에 로드
-          set -a
-          source .env
-          set +a
+          # GitHub 시크릿을 JSON으로 변환하고 파싱하여 GitHub 환경 파일에 추가
+          echo '${{ toJSON(secrets) }}' | jq -r 'to_entries | .[] | select(.key != "GITHUB_TOKEN" and .key != "EC2_SSH_KEY") | "\(.key)=\(.value)"' >> $GITHUB_ENV
           
           # 확인 메시지 (실제 값은 표시되지 않음)
-          echo "환경변수가 성공적으로 로드되었습니다."
-          echo "로드된 변수 목록 (값은 보안상 표시되지 않음):"
-          cat .env | cut -d= -f1
-          
-          # 빌드 후 환경변수 파일 삭제
-          echo "빌드 후 .env 파일을 삭제하기 위한 트랩 설정"
-          trap "rm -f .env" EXIT
+          echo "환경변수가 성공적으로 설정되었습니다."
+          echo "설정된 변수 목록 (값은 보안상 표시되지 않음):"
+          echo '${{ toJSON(secrets) }}' | jq -r 'to_entries | .[] | select(.key != "GITHUB_TOKEN" and .key != "EC2_SSH_KEY") | .key'
 
       # Gradle 빌드 실행 (환경변수는 이전 단계에서 설정됨)
       - name: Build with Gradle Wrapper
         run: |
-          # 환경변수 파일에서 변수 로드
-          set -a
-          source .env
-          set +a
-          
-          # Gradle 빌드 실행
-          ./gradlew build
-          
-          # 환경변수 파일 삭제
-          rm -f .env
+          # Gradle 빌드 실행 (환경변수는 GitHub_ENV를 통해 자동으로 로드됨)
+          # 테스트 환경에 환경변수를 시스템 속성으로 전달
+          ./gradlew build -Dorg.gradle.project.systemProp.spring.profiles.active=test
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
