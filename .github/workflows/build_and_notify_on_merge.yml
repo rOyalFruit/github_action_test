@@ -1,9 +1,10 @@
 name: PR Merge Build and Notify
 
+# CodeQL 코드 스캐닝 워크플로우는 기본 브랜치의 푸시 이벤트에 대해 실행하므로
+# PR이 닫힐 때 수행하는게 아닌 PUSH가 발생했을 때 수행.
+# 쉽게 말해, CodeQL이 탐지한 보안 취약점을 깃허브 Security -> Code scanning에 표시하기 위함.
 on:
-  pull_request:
-    types:
-      - closed
+  push:
     branches:
       - main
       - dev
